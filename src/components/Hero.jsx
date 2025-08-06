@@ -3,10 +3,14 @@ import { motion } from 'framer-motion';
 
 const Hero = () => {
   return (
-    <section className="text-center py-28 px-4 bg-gradient-to-b from-black via-gray-900 to-black text-white">
+    <section className="relative text-center py-32 px-6 bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-hidden">
+      {/* Subtle animated circles in background */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-green-600 opacity-20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-green-400 opacity-10 rounded-full blur-3xl animate-ping"></div>
+
       <motion.h1
-        className="text-5xl md:text-6xl font-bold text-green-400 drop-shadow-lg"
-        initial={{ opacity: 0, y: -40 }}
+        className="text-5xl md:text-6xl font-extrabold text-green-400 drop-shadow-lg"
+        initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
@@ -14,22 +18,22 @@ const Hero = () => {
       </motion.h1>
 
       <motion.p
-        className="mt-6 text-lg md:text-xl max-w-xl mx-auto text-gray-300"
+        className="mt-6 text-lg md:text-xl max-w-2xl mx-auto text-gray-300"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.8 }}
+        transition={{ delay: 0.3, duration: 0.8 }}
       >
-        Sign up now to be the first to access the ultimate sports betting research platform.
+        Join the waitlist and experience the next generation of sports betting research.
       </motion.p>
 
       <motion.div
-        className="mt-8"
+        className="mt-10"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.6, duration: 0.6 }}
+        transition={{ delay: 0.5, duration: 0.6 }}
       >
-        <span className="inline-block px-6 py-3 text-lg bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transform hover:scale-105 cursor-pointer">
-          Coming Soon
+        <span className="inline-block px-8 py-4 text-lg bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transform hover:scale-110 transition-transform cursor-pointer">
+          🚀 Coming Soon
         </span>
       </motion.div>
     </section>

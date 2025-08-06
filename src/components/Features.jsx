@@ -2,34 +2,54 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const features = [
-  { title: "Live Game Stats", desc: "Track real-time data for every major sport." },
-  { title: "AI Predictions", desc: "Smarter insights using predictive models and trends." },
-  { title: "Custom Alerts", desc: "Get notified for props, scores, and special stats." },
+  { 
+    title: "📊 Live Game Stats", 
+    desc: "Stay ahead of every game with real-time updates on scores, player performances, and team stats. Our live scoreboard refreshes instantly, giving you the most accurate data without delay." 
+  },
+  { 
+    title: "📈 Trends Dashboard", 
+    desc: "Analyze betting market shifts, prop line movements, and public betting percentages all in one place. See where the money is going and find early value plays before the odds adjust." 
+  },
+  { 
+    title: "🔍 Research Hub", 
+    desc: "Dive deep into historical matchups, player form, head-to-head stats, and advanced metrics. Our research tab provides the data you need to back every bet with solid evidence." 
+  },
+  { 
+    title: "🤖 AI Betting Bot", 
+    desc: "Get smarter picks powered by machine learning. The AI Bot scans thousands of data points to identify high-probability bets and unique player props tailored to your preferences." 
+  },
+  { 
+    title: "📢 Custom Alerts", 
+    desc: "Set alerts for your favorite teams, players, or specific prop markets. Receive instant notifications when odds move, lines change, or the AI detects a potential winning opportunity." 
+  },
+  { 
+    title: "⚡ Live Scores & Game Feeds", 
+    desc: "Track multiple games across different sports simultaneously with fast, accurate live updates. No more jumping between apps – GameGrid keeps it all in one dashboard." 
+  },
 ];
 
 const Features = () => {
   return (
-    <section className="py-16 px-6 bg-gray-900 text-white">
+    <section className="py-20 px-6 bg-gradient-to-b from-gray-900 to-black text-white">
       <motion.h2
-        className="text-3xl md:text-4xl font-bold text-center text-green-400 mb-10"
+        className="text-4xl font-extrabold text-center text-green-400 mb-12"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        Why Choose GameGrid?
+        Everything You Need in One Place
       </motion.h2>
-      <div className="grid gap-8 md:grid-cols-3 text-center max-w-5xl mx-auto">
+      <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
         {features.map((item, index) => (
           <motion.div
             key={index}
-            className="bg-white/10 p-6 rounded-lg shadow-md hover:shadow-green-400/40 backdrop-blur-sm"
+            className="bg-white/10 p-8 rounded-xl shadow-lg backdrop-blur-md text-center hover:shadow-green-400/40 transition-all hover:-translate-y-2"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 * index, duration: 0.6 }}
-            whileHover={{ scale: 1.05 }}
+            transition={{ delay: 0.15 * index, duration: 0.6 }}
           >
-            <h3 className="text-xl font-semibold text-green-400">{item.title}</h3>
-            <p className="text-sm mt-3 text-gray-300">{item.desc}</p>
+            <h3 className="text-2xl font-semibold text-green-400">{item.title}</h3>
+            <p className="text-gray-300 mt-3 text-sm leading-relaxed">{item.desc}</p>
           </motion.div>
         ))}
       </div>
