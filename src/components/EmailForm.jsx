@@ -37,7 +37,10 @@ const EmailForm = () => {
   };
 
   return (
-    <section className="px-4 py-20 text-center min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-gray-900 to-black">
+    <section
+      id="signup-section"
+      className="px-4 py-20 text-center min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-gray-900 to-black"
+    >
       <motion.form
         onSubmit={handleSubmit}
         className="flex flex-col items-center gap-4 max-w-md mx-auto bg-white/10 p-8 rounded-lg shadow-xl backdrop-blur-md border border-green-500/20"
@@ -89,8 +92,11 @@ const EmailForm = () => {
               transition={{ duration: 0.3 }}
             >
               <h3 className="text-xl font-bold mb-2">🎉 Thanks for signing up!</h3>
-              <p>You are signup number <span className="text-green-500 font-semibold">#{signupNumber}</span></p>
-              <button 
+              <p>
+                You are signup number{' '}
+                <span className="text-green-500 font-semibold">#{signupNumber}</span>
+              </p>
+              <button
                 className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                 onClick={() => setSuccess(false)}
               >

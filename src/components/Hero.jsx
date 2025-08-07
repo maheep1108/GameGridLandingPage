@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 
 const Hero = () => {
+  const handleScroll = () => {
+    const section = document.getElementById("signup-section");
+    section?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <section className="relative text-center py-32 px-6 bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-hidden">
       {/* Subtle animated circles in background */}
@@ -32,7 +37,10 @@ const Hero = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5, duration: 0.6 }}
       >
-        <span className="inline-block px-8 py-4 text-lg bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transform hover:scale-110 transition-transform cursor-pointer">
+        <span
+          onClick={handleScroll}
+          className="inline-block px-8 py-4 text-lg bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transform hover:scale-110 transition-transform cursor-pointer"
+        >
           🚀 Coming Soon
         </span>
       </motion.div>
