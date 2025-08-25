@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, doc, getDoc, setDoc } from 'firebase/firestore';
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  collection,
+  addDoc,
+  doc,
+  getDoc,
+  setDoc,
+  runTransaction,
+  query,
+  where,
+  getDocs,
+} from 'firebase/firestore';
+import { motion, AnimatePresence } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 
 const EmailForm = () => {
@@ -9,30 +19,85 @@ const EmailForm = () => {
   const [name, setName] = useState('');
   const [success, setSuccess] = useState(false);
   const [signupNumber, setSignupNumber] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState(''); // success message text
+  const [err, setErr] = useState(''); // error message text
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const counterRef = doc(db, 'counters', 'signupsCounter');
-      const counterSnap = await getDoc(counterRef);
-      let currentCount = counterSnap.exists() ? counterSnap.data().totalSignups : 0;
-      const newCount = currentCount + 1;
+    setErr('');
+    setMsg('');
+    setLoading(true);
 
-      await setDoc(counterRef, { totalSignups: newCount }, { merge: true });
-      await addDoc(collection(db, 'signups'), { name, email, signupNumber: newCount });
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanName = name.trim();
+
+      if (!cleanName || !cleanEmail) {
+        throw new Error('Please provide your name and a valid email.');
+      }
+
+      // 1) Prevent duplicates: check if this email already exists
+      const q = query(collection(db, 'signups'), where('email', '==', cleanEmail));
+      const existing = await getDocs(q);
+      if (!existing.empty) {
+        // Already signed up — do not increment counter or add another doc
+        setSignupNumber(existing.docs[0].data().signupNumber ?? null);
+        setMsg("You're already on the list!");
+        setSuccess(true);
+        setLoading(false);
+        setEmail('');
+        setName('');
+        return;
+      }
+
+      // 2) Atomically increment counter and get the new number
+      const counterRef = doc(db, 'counters', 'signupsCounter');
+      const newCount = await runTransaction(db, async (tx) => {
+        const snap = await tx.get(counterRef);
+        if (!snap.exists()) {
+          // initialize if missing
+          tx.set(counterRef, { totalSignups: 0 });
+          return 1;
+        }
+        const current = snap.data().totalSignups || 0;
+        const next = current + 1;
+        tx.update(counterRef, { totalSignups: next });
+        return next;
+      });
+
+      // 3) Create signup document
+      const docRef = await addDoc(collection(db, 'signups'), {
+        name: cleanName,
+        email: cleanEmail,
+        signupNumber: newCount,
+        createdAt: new Date().toISOString(),
+      });
+      // console.log('Document written with ID:', docRef.id);
+
+      // 4) Send confirmation email
       await emailjs.send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID,
         import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        { to_name: name, to_email: email },
+        { to_name: cleanName, to_email: cleanEmail },
         import.meta.env.VITE_EMAILJS_USER_ID
       );
 
+      // 5) Success UI
       setSignupNumber(newCount);
+      setMsg('Thanks for signing up!');
       setSuccess(true);
       setEmail('');
       setName('');
     } catch (error) {
       console.error('Error signing up:', error);
+      setErr(
+        error?.message ||
+          'Something went wrong while signing you up. Please try again in a moment.'
+      );
+      setSuccess(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,7 +108,7 @@ const EmailForm = () => {
     >
       <motion.form
         onSubmit={handleSubmit}
-        className="flex flex-col items-center gap-4 max-w-md mx-auto bg-white/10 p-8 rounded-lg shadow-xl backdrop-blur-md border border-green-500/20"
+        className="flex flex-col items-center gap-4 max-w-md mx-auto bg-white/10 p-8 rounded-lg shadow-xl backdrop-blur-md border border-green-500/20 w-full"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -51,6 +116,7 @@ const EmailForm = () => {
         <h2 className="text-white text-lg mb-2">
           Sign up now with your email and name to get notified when we launch 🚀
         </h2>
+
         <motion.input
           type="text"
           placeholder="Your Name"
@@ -58,6 +124,7 @@ const EmailForm = () => {
           onChange={(e) => setName(e.target.value)}
           className="px-4 py-3 w-full rounded text-black focus:ring-2 focus:ring-green-500 outline-none"
           required
+          disabled={loading}
         />
         <motion.input
           type="email"
@@ -66,16 +133,23 @@ const EmailForm = () => {
           onChange={(e) => setEmail(e.target.value)}
           className="px-4 py-3 w-full rounded text-black focus:ring-2 focus:ring-green-500 outline-none"
           required
+          disabled={loading}
         />
+
+        {err ? (
+          <div className="text-red-400 text-sm w-full text-left">{err}</div>
+        ) : null}
+
         <motion.button
           type="submit"
-          className="bg-green-500 px-6 py-3 rounded font-semibold text-white hover:bg-green-600 transition-transform transform hover:scale-105 w-full"
+          className="bg-green-500 px-6 py-3 rounded font-semibold text-white hover:bg-green-600 transition-transform transform hover:scale-105 w-full disabled:opacity-60 disabled:hover:scale-100"
+          disabled={loading}
         >
-          Notify Me
+          {loading ? 'Submitting…' : 'Notify Me'}
         </motion.button>
       </motion.form>
 
-      {/* ✅ Sleek popup animation */}
+      {/* Popup */}
       <AnimatePresence>
         {success && (
           <motion.div
@@ -91,11 +165,15 @@ const EmailForm = () => {
               exit={{ scale: 0.7, opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <h3 className="text-xl font-bold mb-2">🎉 Thanks for signing up!</h3>
-              <p>
-                You are signup number{' '}
-                <span className="text-green-500 font-semibold">#{signupNumber}</span>
-              </p>
+              <h3 className="text-xl font-bold mb-2">🎉 {msg || 'Thanks for signing up!'}</h3>
+              {signupNumber ? (
+                <p>
+                  You are signup number{' '}
+                  <span className="text-green-600 font-semibold">#{signupNumber}</span>
+                </p>
+              ) : (
+                <p>We’ve already got you on the list.</p>
+              )}
               <button
                 className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                 onClick={() => setSuccess(false)}
